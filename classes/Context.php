@@ -354,6 +354,11 @@ class ContextCore
         if (Configuration::get('PS_CART_FOLLOWING') && (empty($this->cookie->id_cart) || Cart::getNbProducts($this->cookie->id_cart) == 0) && $idCart = (int) Cart::lastNoneOrderedCart($this->customer->id)) {
             $this->cart = new Cart($idCart);
             $this->cart->secure_key = $customer->secure_key;
+            foreach($this->cart->getCartRules(CartRule::FILTER_ACTION_ALL, false) as $cartRule){
+                if (Validate::isLoadedObject($cartRule['obj']) && !$cartRule['obj']->checkValidity($this->getContext(), false, false, true)) {
+                    $this->cart->removeCartRule($cartRule['id_cart_rule']);
+                }
+            }
         } else {
             $idCarrier = (int) $this->cart->id_carrier;
             $this->cart->secure_key = $customer->secure_key;
